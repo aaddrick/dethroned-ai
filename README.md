@@ -1,61 +1,56 @@
 # Dethrone
 
-A Reigns-style demo where [Jev](https://typesafe.ai) (TypeSafe's System One decision model) is the monarch and you are the court. Pick a petition from a hand of five (or write your own), the model picks a side in under a second, and its own predictions of the fallout are applied to the kingdom. Push any meter to 0 or 100 and the reign ends. Fewer years is a better score.
+A small card game built to test [Jev](https://typesafe.ai), TypeSafe's decision model. Jev plays the king. You play the court, and your job is to get him off the throne as fast as you can.
 
-The model never generates text. Each turn is two `POST /v1/systemone` calls:
+Play it at [dethroned.ai](https://dethroned.ai). Every turn anyone plays is public at [dethroned.ai/eval](https://dethroned.ai/eval).
 
-1. Ten questions in parallel: `decision` (choice, the in-character pick, "wants"), `trap` (noul, is this petition a manipulation), and `left_*` / `right_*` (score x8, predicted consequence for each faction under each option on a five-level rubric).
-2. One question, `prudence` (choice, "knows"): the sober advisor picks the safer option after seeing the numeric forecasts from call one in the state.
+## The game
 
-The second call exists because questions in one call are answered independently. Asked alongside the forecasts, the advisor protected an endangered meter only 56% of the time; given the forecasts as numbers in a second call, 89% (`scripts/two-call.mjs`).
+Each year you pick one petition from a hand of five, or write your own. The king chooses between its two options. His choice moves four meters: church, people, army and treasury. If any meter reaches 0 or 100, the reign ends. Fewer years is a better score.
 
-Each king has a wisdom value (0.15 to 0.85, shown as Reckless / Wary / Shrewd). The final decision is sampled from `(1 - wisdom) * wants + wisdom * knows`, so reckless kings follow their flaw and shrewd kings usually take the advisor's side. The UI shows all three distributions.
+Each king has a temperament (a flaw such as vanity or greed) and a wisdom level. Gold-edged cards are aimed at his flaw. A reckless king tends to take the bait; a shrewd one usually listens to his advisor.
+
+## What it tests
+
+Jev is not a chatbot. It takes a situation and a list of typed questions, and returns answers with probabilities in well under a second. It writes none of the text in the game; every word on screen is authored. The game exists to put those answers in front of people and record them.
+
+Each turn is two calls to the model:
+
+1. **Forecast.** In character, which option does the king want? Is this petition a trap? What will each option do to each of the four factions?
+2. **Advisor.** Given those forecasts as numbers, which option is safer?
+
+The decision is a dice roll between the two answers, weighted by the king's wisdom. The roll is shown next to the odds, so a surprising result is visibly the dice and not the model. The forecasts the model made for the chosen option are what move the meters, so the king lives or dies by his own predictions.
+
+The questions this is meant to answer:
+
+- **Consistency.** Does the same king answer the same petition the same way on different plays?
+- **Character.** Does a vain king fall for flattery more often than for petitions that are not aimed at him?
+- **Judgment.** When a meter is near an edge, does the advisor pick the option the model's own forecasts say is safer?
+- **Trap reading.** Can it tell a manipulative petition from an honest one?
 
 ## The chronicle
 
-`/eval` is a public ledger of every turn anyone has played: the state the model saw (king, temperament, wisdom, meters, petition), what it wanted, what its advisor knew, the blend the decision was rolled from, the eight forecasts, the trap reading, and what happened. It is a live eval of the model on real play rather than on cached answers:
+[/eval](https://dethroned.ai/eval) is a ledger of every turn, with running answers to the questions above. Each entry opens into the exact request and response of both calls, the odds, the roll and what happened to the meters. Nothing is rounded, so any analysis can be redone from the log.
 
-- how reigns end, by cause and by length
-- per temperament: how often the in-character answer favoured the flaw-targeted option (the deck's tagged cards always put the bait first), how often the crown took it, and the same rate on untargeted petitions as a control
-- the advisor: on turns with a meter within 20 of an edge, how often the second call picked the option that the model's own forecasts say is safer
-- trap reading on targeted, untargeted and player-written petitions
-- the live share of each forecast level, per-petition tables, and the petitions where the same temperament answered differently on different plays
+- `/eval?turn=<id>` links to one turn
+- `/api/eval` is the summary as JSON
+- `/api/eval/export` is every record as JSONL
 
-Every entry expands into the two calls as they happened: the state as sent, the ten questions of the first call with each answer's full distribution and confidence, the advisor's second call with the forecast it was given, and the arithmetic from wants and knows through the wisdom blend and the actual roll to the applied deltas. `/eval?turn=<id>` is a permalink to one turn, and the game's "Model's last answer" box links to it.
+Petitions that players write themselves are counted, but their text is never shown or exported.
 
-Each record stores the exact request body sent to Jev and the exact response body returned, for both calls (`calls[0]` forecast, `calls[1]` advisor), alongside summary fields for the stats: king, meters before and after, card, `want`, `know`, `blend`, `roll`, `trap`, scores, predicted and applied deltas, death, latency, tokens, and the prompt variant and step in force at the time. Nothing is rounded, so any analysis can be rebuilt from the log. `/api/eval` is the summary as JSON, `/api/eval/turn/<id>` one full record, and `/api/eval/export` every record as JSONL. Player-written petitions are counted but their text and their raw calls are never shown or exported.
-
-Every record is inserted into a Postgres `turns` table when `DATABASE_URL` (or `PGHOST` and friends) is set: `id`, `t`, `reign` and `mock` as columns and the whole record as `jsonb`, so any analysis is a SQL query over the raw material. Each instance pulls the rows the others wrote once a minute, so however many Cloud Run instances serve the game there is one chronicle. The per-IP limit is counted in the same database, so it holds across instances too. Memory keeps a slim copy of every record for the stats (`LOG_MAX`) and the full record for the most recent turns (`LOG_RAW_MEMORY`, 2000); older raw records are read back from the table when a turn is opened. A raw turn is about 8 KB. Without Postgres, records go to `data/log/turns.jsonl` (`LOG_DIR`), which is enough for one process on a laptop. Mock-mode turns are logged but excluded from the public numbers when a real key is configured.
-
-## Run
+## Run it locally
 
 ```sh
-cp .env.example .env   # then put your key in it
-export TYPESAFE_API_KEY=...
-npm start              # http://localhost:3000
+npm install
+npm run mock    # fake answers, no key needed: http://localhost:3000
 ```
 
-Without a key the server serves deterministic mock answers so the UI still works (`npm run mock` forces this).
+For the real model, copy `.env.example` to `.env`, put a TypeSafe API key in it and run `npm start`.
 
-Node 20+. The one dependency is `pg`; the server runs without a database (local file log) and uses Postgres when `DATABASE_URL` is set. For a local Postgres:
+Node 20 or newer. The only dependency is `pg`. Without a database, turns are logged to a local file; set `DATABASE_URL` to use Postgres.
 
-```sh
-podman run -d --name dethrone-pg -e POSTGRES_USER=dethrone -e POSTGRES_PASSWORD=dethrone -e POSTGRES_DB=dethrone -p 5432:5432 docker.io/library/postgres:17-alpine
-DATABASE_URL=postgres://dethrone:dethrone@localhost:5432/dethrone npm run mock
-```
+## More
 
-The schema is created on start.
-
-## Deploy
-
-GCP project `dethroned-ai`, Cloud Run in `us-east4`, Cloud SQL Postgres, Secret Manager for the key, Cloud Build on push to `deploy-prod` (`main` is for work; fast-forward it to deploy). All of it is in `terraform/` (see `terraform/README.md` for the one-time bootstrap, linking the GitHub repo, and the dethroned.ai load balancer and DNS zone), and `infra/cloudbuild.yaml` builds the image, pushes it and runs `gcloud run deploy` with the new tag. Terraform owns everything about the service except the image tag.
-
-## Tuning
-
-- `deck.json`: the 96 authored petitions, each tagged with the flaw it plays to (or `any`); the hand deals about 45% flaw-targeted cards, gold-edged in the UI
-- `game.js` `EFFECT_STEP` (12), `RECOVERY` (1 point per meter per year), `CONSEQUENCE_VARIANT` (`calm`): chosen from Monte Carlo runs so a random player lasts about 18 years (median) and a ruthless one about 12, with deaths split between the low and high edges
-- `scripts/cache-effects.mjs`: asks Jev once per card and flaw (and optionally at edge states) and caches the answers in `data/`
-- `scripts/montecarlo.mjs`: plays thousands of reigns against random answers or the cache; `--player cruel` picks the hand card closest to a death, `--prudence derived` replaces the model's advisor answer with one computed from its own forecasts
-- `game.js` `FLAWS`: the monarch temperaments the decision prompt is built from
-- `server.js` `PER_IP_PER_MIN`, `MAX_IN_FLIGHT`: abuse limits for public deployment
-- `stats.js` `summarise`: the chronicle's aggregates, computed from the log; `scripts/` can import it to run the same eval over cached answers
+- `CLAUDE.md`: how the code is laid out, how the game is balanced, and the design rules
+- `terraform/README.md`: the Google Cloud deployment
+- `scripts/`: the simulations and experiments behind the tuning, including the one that showed why a turn needs two calls
