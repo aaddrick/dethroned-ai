@@ -1,0 +1,28 @@
+# A release: main to a checked revision on dethroned.ai.
+# GRID SNAKE. Reading order is boustrophedon: row 1 left to right, the flow drops
+# down the last column, the next row reads back right to left. Cells fill
+# row-major over declaration order, and every edge must join neighbouring cells
+# or it draws as a diagonal. See CLAUDE.md in this directory before editing.
+
+grid-rows: 2
+grid-columns: 4
+horizontal-gap: 100
+vertical-gap: 70
+
+# row 1, left to right
+main: "Work lands on main" { class: stage }
+ff: "Fast-forward deploy-prod\nand push" { class: player }
+trig: "Trigger deploy-dethrone\nCloud Build, us-east4" { class: stage }
+img: "Build the image\npush :sha and :latest" { class: stage }
+# row 2, right to left
+sp1: "" { style.opacity: 0 }
+live: "Live on dethroned.ai" { class: terminal }
+smoke: "Smoke test through\nthe domain: fails in\nmock mode" { class: gate }
+deploy: "gcloud run deploy\nnew revision, same env" { class: stage }
+
+main -> ff: { class: flow }
+ff -> trig: { class: flow }
+trig -> img: { class: flow }
+img -> deploy: { class: flow }
+deploy -> smoke: { class: flow }
+smoke -> live: "passes" { class: flow }

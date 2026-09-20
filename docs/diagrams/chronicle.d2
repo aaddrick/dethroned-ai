@@ -1,0 +1,29 @@
+# From a resolved turn to the public ledger.
+# GRID SNAKE. Reading order is boustrophedon: row 1 left to right, the flow drops
+# down the last column, the next row reads back right to left. Cells fill
+# row-major over declaration order, and every edge must join neighbouring cells
+# or it draws as a diagonal. See CLAUDE.md in this directory before editing.
+
+grid-rows: 2
+grid-columns: 4
+horizontal-gap: 90
+vertical-gap: 70
+
+# row 1, left to right
+turn: "A turn resolves" { class: stage }
+rec: "Record v3\nrequest and response of\nboth calls, nothing rounded" { class: stage }
+table: "turns table\njsonb, one decision per\nreign and year" { class: store }
+pull: "Every instance pulls\nnew rows each minute" { class: stage }
+# row 2, right to left
+reader: "Anyone\nreads, links, downloads" { class: player }
+out: "/eval\n/api/eval, /turn/<id>,\n/export" { class: terminal }
+redact: "redact\nplayer-written text and\nits raw calls withheld" { class: gate }
+stats: "stats.js\naggregates over\nslim copies in memory" { class: stage }
+
+turn -> rec: { class: flow }
+rec -> table: { class: flow }
+table -> pull: { class: flow }
+pull -> stats: { class: flow }
+stats -> redact: { class: flow }
+redact -> out: { class: flow }
+out -> reader: { class: flow }

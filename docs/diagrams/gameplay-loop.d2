@@ -1,0 +1,31 @@
+# The reign, from coronation to death.
+# GRID SNAKE. Reading order is boustrophedon: row 1 left to right, the flow drops
+# down the last column, the next row reads back right to left. Cells fill
+# row-major over declaration order, and every edge must join neighbouring cells
+# or it draws as a diagonal. See CLAUDE.md in this directory before editing.
+
+grid-rows: 2
+grid-columns: 4
+horizontal-gap: 110
+vertical-gap: 80
+
+# row 1, left to right
+reign: "A new king\nname, flaw, wisdom" { class: stage }
+hand: "Hand of five\nabout 45% play to the flaw" { class: stage }
+play: "Play a petition\nor write your own" { class: player }
+decide: "The king decides\ntwo model calls and a roll" { class: model }
+# row 2, right to left
+dead: "The reign ends\nfewer years is a better score" { class: terminal }
+edge: "Any meter\nat 0 or 100?" { class: gate }
+heal: "Every meter\nregains 1 point" { class: stage }
+move: "Meters move\nby the model's own forecast" { class: stage }
+
+reign -> hand: { class: flow }
+hand -> play: { class: flow }
+play -> decide: { class: flow }
+decide -> move: { class: flow }
+move -> heal: { class: flow }
+heal -> edge: { class: flow }
+edge -> hand: "no: next year,\ndraw a card" { class: loop }
+edge -> dead: "yes" { class: flow }
+dead -> reign: "crown the\nnext one" { class: loop }

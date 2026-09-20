@@ -1,0 +1,36 @@
+# The running system. A grid rather than a layout engine: the service has exactly
+# four neighbours, one per side. Secret Manager has no free side, so it is named
+# inside the service cell.
+# GRID SNAKE. Reading order is boustrophedon: row 1 left to right, the flow drops
+# down the last column, the next row reads back right to left. Cells fill
+# row-major over declaration order, and every edge must join neighbouring cells
+# or it draws as a diagonal. See CLAUDE.md in this directory before editing.
+
+grid-rows: 3
+grid-columns: 4
+horizontal-gap: 100
+vertical-gap: 60
+
+# row 1: the release path, left to right, ending above the service
+git: "GitHub\npush to deploy-prod" { class: player }
+build: "Cloud Build\nbuild, deploy, smoke test" { class: stage }
+reg: "Artifact Registry\nimage :sha and :latest" { class: store }
+sp1: "" { style.opacity: 0 }
+# row 2: the request path
+browser: "Browser\nholds the signed state" { class: player }
+lb: "Load balancer\ndethroned.ai, certificate,\nredirects, Cloud DNS" { class: stage }
+run: "Cloud Run: dethrone\nNode, up to 3 instances\nkeys from Secret Manager" { class: stage }
+jev: "Jev\napi.typesafe.ai\n2 calls a turn" { class: model }
+# row 3
+sp2: "" { style.opacity: 0 }
+sp3: "" { style.opacity: 0 }
+sql: "Cloud SQL Postgres\nturns, ip_hits, day_hits" { class: store }
+sp4: "" { style.opacity: 0 }
+
+git -> build: { class: flow }
+build -> reg: { class: flow }
+reg -> run: "new revision" { class: flow }
+browser <-> lb: { class: flow }
+lb <-> run: "only door in" { class: flow }
+run <-> jev: { class: flow }
+run <-> sql: "one ledger,\none rate limit" { class: flow }

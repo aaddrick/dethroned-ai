@@ -1,0 +1,38 @@
+# One turn on the server: POST /api/turn to the response.
+# GRID SNAKE. Reading order is boustrophedon: row 1 left to right, the flow drops
+# down the last column, the next row reads back right to left. Cells fill
+# row-major over declaration order, and every edge must join neighbouring cells
+# or it draws as a diagonal. See CLAUDE.md in this directory before editing.
+
+grid-rows: 3
+grid-columns: 4
+horizontal-gap: 90
+vertical-gap: 60
+
+# row 1, left to right
+post: "POST /api/turn\nsigned token + card" { class: player }
+gate: "The gauntlet\nlimits, signature, replay" { class: gate }
+state: "Build the state\nking, meters, petition" { class: stage }
+one: "Call one: forecast\n10 questions, answered\nindependently" { class: model }
+# row 2, right to left
+roll: "Roll\nfirst option if\nroll < blend" { class: stage }
+blend: "Blend\n(1 - wisdom) x wants\n+ wisdom x knows" { class: stage }
+two: "Call two: advisor\nknows: which is safer" { class: model }
+nums: "Forecasts become numbers\nand join the state" { class: stage }
+# row 3, left to right
+apply: "Apply the chosen forecast\n+1 recovery, clamp 0 to 100" { class: stage }
+rec: "Record v3\nboth calls kept raw" { class: store }
+sign: "Sign next year's token\nnone if the king is dead" { class: stage }
+resp: "Response\nghost ticks, blend bar,\nroll, deltas" { class: terminal }
+
+post -> gate: { class: flow }
+gate -> state: { class: flow }
+state -> one: { class: flow }
+one -> nums: "wants, trap,\n8 forecasts" { class: flow }
+nums -> two: { class: flow }
+two -> blend: "knows" { class: flow }
+blend -> roll: { class: flow }
+roll -> apply: { class: flow }
+apply -> rec: { class: flow }
+rec -> sign: { class: flow }
+sign -> resp: { class: flow }

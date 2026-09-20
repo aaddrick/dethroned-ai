@@ -1,0 +1,30 @@
+# Everything a turn must pass before the model is called. Each gate names what it
+# answers with when it refuses; the page turns the code into a notice.
+# GRID SNAKE. Reading order is boustrophedon: row 1 left to right, the flow drops
+# down the last column, the next row reads back right to left. Cells fill
+# row-major over declaration order, and every edge must join neighbouring cells
+# or it draws as a diagonal. See CLAUDE.md in this directory before editing.
+
+grid-rows: 2
+grid-columns: 4
+horizontal-gap: 80
+vertical-gap: 70
+
+# row 1, left to right
+origin: "Our own page?\nJSON body, same origin\nelse 415 / 403" { class: gate }
+ip: "Per address\n120 a minute\nelse 429 slow" { class: gate }
+day: "Everyone\n20,000 a UTC day\nelse 429 day" { class: gate }
+flight: "At once\n12 per instance\nelse 503 crowded" { class: gate }
+# row 2, right to left
+go: "Play the turn\ntwo model calls" { class: terminal }
+once: "Year already decided?\nreturn the first answer" { class: gate }
+card: "The card\ndeck index, or written\ntext cleaned and capped" { class: gate }
+token: "The token\nsignature holds, under 24 h\nelse 400 reign / reload" { class: gate }
+
+origin -> ip: { class: flow }
+ip -> day: { class: flow }
+day -> flight: { class: flow }
+flight -> token: { class: flow }
+token -> card: { class: flow }
+card -> once: { class: flow }
+once -> go: "no" { class: flow }
