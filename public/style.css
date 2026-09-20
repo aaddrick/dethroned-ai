@@ -24,6 +24,10 @@ button.text:disabled { opacity: .4; cursor: wait; }
 .crown .sep { color: var(--dim); margin: 0 .5em; }
 .crown .nature { color: var(--muted); font-style: italic; max-width: 60ch; }
 .crown #new-reign { position: absolute; right: 0; top: 0; }
+.crown .links { position: absolute; left: 0; top: 0; display: flex; gap: 4px; }
+.crown .links a { display: block; padding: 6px; color: var(--muted); line-height: 0; }
+.crown .links a:hover, .crown .links a:focus-visible { color: var(--gold); }
+.crown .links svg { width: 20px; height: 20px; fill: currentColor; }
 
 /* meters */
 .meters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; width: min(900px, 100%); }
@@ -100,6 +104,7 @@ button.text:disabled { opacity: .4; cursor: wait; }
 @media (max-width: 760px) {
   html { font-size: 16px; }
   .crown #new-reign { position: static; }
+  .crown .links { position: static; }
   .meters { gap: 14px; }
   .table { grid-template-columns: 1fr; gap: 10px; }
   .option.left, .option.right { align-items: center; text-align: center; min-height: 0; }
