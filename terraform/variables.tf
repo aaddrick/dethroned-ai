@@ -103,7 +103,7 @@ variable "container_concurrency" {
 variable "per_ip_per_min" {
   description = "Turns per minute one IP may play (PER_IP_PER_MIN in server.js)."
   type        = number
-  default     = 30
+  default     = 120
 }
 
 variable "daily_turn_cap" {
@@ -115,7 +115,7 @@ variable "daily_turn_cap" {
 variable "max_in_flight" {
   description = "Turns one instance will process at once (MAX_IN_FLIGHT in server.js)."
   type        = number
-  default     = 8
+  default     = 12
 }
 
 variable "sql_tier" {

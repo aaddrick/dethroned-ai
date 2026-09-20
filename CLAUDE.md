@@ -80,7 +80,7 @@ gcloud sql connect dethrone-pg --user=dethrone --project=dethroned-ai   # passwo
 - Commit only when asked. Stage as you go. Work lands on `main`; a release is `git branch -f deploy-prod main && git push origin deploy-prod`.
 - The repo is public. No billing account IDs, personal email addresses, keys or player-written text in tracked files; project numbers, service account names and the static IP are fine.
 - Verify UI changes in a real browser at desktop and ~400px widths before calling them done.
-- When testing against the API, remember the server's per-IP limit (30 turns per minute by default); scripts should call the API directly.
+- When testing against the API, remember the server's per-IP limit (120 turns per minute by default); scripts should call the API directly.
 - Do not write emoji anywhere in the UI. Use text or plain SVG.
 - The chronicle is public. Never show or export player-written petition text or the raw calls that quote it (`redact` in stats.js); deck cards are authored and fine.
 - Records are `v: 3` since signed state (2026-09-19). `v: 2` records took king, meters and year from the client and are not covered by the one-decision-per-year index; treat them as unverified in analysis.

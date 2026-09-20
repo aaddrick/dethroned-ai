@@ -24,8 +24,8 @@ const DECK = JSON.parse(await fs.readFile(path.join(__dirname, 'deck.json'), 'ut
 // instance on purpose, it protects this process and the model from a burst.
 // DAILY_TURN_CAP is a ceiling on turns from everyone in one UTC day. The model costs next to nothing;
 // the cap is there so a flood cannot bury the chronicle.
-const PER_IP_PER_MIN = Number(process.env.PER_IP_PER_MIN || 30);
-const MAX_IN_FLIGHT = Number(process.env.MAX_IN_FLIGHT || 8);
+const PER_IP_PER_MIN = Number(process.env.PER_IP_PER_MIN || 120);
+const MAX_IN_FLIGHT = Number(process.env.MAX_IN_FLIGHT || 12);
 const DAILY_TURN_CAP = Number(process.env.DAILY_TURN_CAP || 20_000);
 // Which X-Forwarded-For entry is the client, counted from the right. The left of the header is
 // whatever the client sent, so only the entries appended by Google's proxies can be trusted:
