@@ -90,3 +90,17 @@ resource "google_storage_bucket_iam_member" "build_reads_staged_source" {
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.build.email}"
 }
+
+# ─── Cloud Build service agent ───────────────────────────────────────────────
+
+# The 2nd-gen GitHub connection stores its OAuth token as a secret that the
+# Cloud Build service agent creates and owns. Without this, `gcloud builds
+# connections create github` fails on secretmanager.secrets.create. This is the
+# role Google documents for it; there is no narrower one that covers setIamPolicy.
+resource "google_project_iam_member" "cloudbuild_agent_secret_admin" {
+  project = var.project_id
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:service-${var.project_number}@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+
+  depends_on = [google_project_service.apis["cloudbuild.googleapis.com"]]
+}

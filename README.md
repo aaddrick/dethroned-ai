@@ -48,7 +48,7 @@ The schema is created on start.
 
 ## Deploy
 
-GCP project `dethroned-ai`, Cloud Run in `us-east4`, Cloud SQL Postgres, Secret Manager for the key, Cloud Build on push to `main`. All of it is in `terraform/` (see `terraform/README.md` for the one-time bootstrap, linking the GitHub repo, and the dethroned.ai load balancer and DNS zone), and `infra/cloudbuild.yaml` builds the image, pushes it and runs `gcloud run deploy` with the new tag. Terraform owns everything about the service except the image tag.
+GCP project `dethroned-ai`, Cloud Run in `us-east4`, Cloud SQL Postgres, Secret Manager for the key, Cloud Build on push to `deploy-prod` (`main` is for work; fast-forward it to deploy). All of it is in `terraform/` (see `terraform/README.md` for the one-time bootstrap, linking the GitHub repo, and the dethroned.ai load balancer and DNS zone), and `infra/cloudbuild.yaml` builds the image, pushes it and runs `gcloud run deploy` with the new tag. Terraform owns everything about the service except the image tag.
 
 ## Tuning
 

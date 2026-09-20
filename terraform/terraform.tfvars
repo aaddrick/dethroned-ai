@@ -11,4 +11,7 @@ domain = "dethroned.ai"
 restrict_ingress = false
 
 # Set after linking the GitHub repo (terraform/README.md, "Cloud Build trigger").
-github_repository = ""
+github_repository = "projects/dethroned-ai/locations/us-east4/connections/github-aaddrick/repositories/aaddrick-dethroned-ai"
+
+# The trigger builds and deploys pushes to this branch; main is for work.
+deploy_branch = "^deploy-prod$"

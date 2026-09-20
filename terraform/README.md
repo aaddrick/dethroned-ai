@@ -45,7 +45,7 @@ gcloud builds connections create github github-aaddrick --region=us-east4 --proj
 gcloud builds repositories create aaddrick-dethroned-ai --remote-uri=https://github.com/aaddrick/dethroned-ai.git --connection=github-aaddrick --region=us-east4 --project=dethroned-ai
 ```
 
-Put the repository's full resource name in `terraform.tfvars` as `github_repository` and apply; from then on a push to `main` builds and deploys. To deploy by hand before that, or without pushing (the build account must be named, and `.gcloudignore` keeps `infra/` in the upload so the smoke test can run):
+Put the repository's full resource name in `terraform.tfvars` as `github_repository` and apply; from then on a push to `deploy-prod` builds and deploys (`deploy_branch` in `terraform.tfvars`; `main` is where work lands, and a fast-forward of `deploy-prod` to it is a release). To deploy by hand before that, or without pushing (the build account must be named, and `.gcloudignore` keeps `infra/` in the upload so the smoke test can run):
 
 ```sh
 gcloud builds submit --config=infra/cloudbuild.yaml --project=dethroned-ai --region=us-east4 \
