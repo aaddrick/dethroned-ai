@@ -5,7 +5,10 @@
   <img alt="One turn on the server: the request passes the gauntlet, call one forecasts, its forecasts become numbers for call two, the two answers are blended by wisdom and rolled, the chosen forecast is applied, the record is written and the next token is signed" src="diagrams/turn-light.svg">
 </picture>
 
-One `POST /api/turn` is two calls to Jev and one record. The code is `server.js` for the request and
+One `POST /api/turn` is two calls to Jev and one record. For the same thing with real numbers in it,
+see [A real turn, call by call](example-turn.md).
+
+The code is `server.js` for the request and
 `game.js` for everything about the rules: `buildState`, `buildQuestions`, `buildAdvisorCall` and
 `resolveTurn` are pure functions, and the scripts import them too.
 

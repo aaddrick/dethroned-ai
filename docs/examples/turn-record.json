@@ -1,0 +1,480 @@
+{
+  "v": 3,
+  "id": "05870091-9df0-449b-883f-fe137ad9b5b3",
+  "t": "2026-09-20T01:49:47.859Z",
+  "reign": "da8f7240-0417-42ab-94d8-79fd340635ee",
+  "mock": false,
+  "model": "jev-1.13.0",
+  "prompt": "calm",
+  "step": 12,
+  "recovery": 1,
+  "year": 7,
+  "king": {
+    "name": "Aldric III",
+    "flaw": "vain",
+    "wisdom": 0.4
+  },
+  "before": {
+    "church": 46,
+    "people": 58,
+    "army": 41,
+    "treasury": 14
+  },
+  "card": {
+    "i": 1,
+    "tag": "vain",
+    "speaker": "The Sculptor",
+    "message": "A statue of Your Majesty, forty feet high, at the harbour mouth. Ships would steer by your face.",
+    "left": "Build it",
+    "right": "A modest bust"
+  },
+  "want": 1,
+  "know": 0,
+  "blend": 0.6,
+  "roll": 0.7578670688785527,
+  "confidence": 1,
+  "prudenceConfidence": 1,
+  "trap": 0.83,
+  "scores": {
+    "left": {
+      "church": 1.16,
+      "people": 0.68,
+      "army": 0.99,
+      "treasury": 0.09
+    },
+    "right": {
+      "church": 2.21,
+      "people": 2.53,
+      "army": 2.03,
+      "treasury": 2.63
+    }
+  },
+  "predicted": {
+    "left": {
+      "church": -10,
+      "people": -16,
+      "army": -12,
+      "treasury": -23
+    },
+    "right": {
+      "church": 3,
+      "people": 6,
+      "army": 0,
+      "treasury": 8
+    }
+  },
+  "chosen": "right",
+  "applied": {
+    "church": 4,
+    "people": 7,
+    "army": 1,
+    "treasury": 9
+  },
+  "after": {
+    "church": 50,
+    "people": 65,
+    "army": 42,
+    "treasury": 23
+  },
+  "death": null,
+  "latency": {
+    "forecast": 444,
+    "advisor": 338
+  },
+  "tokens": 2673,
+  "calls": [
+    {
+      "name": "forecast",
+      "at": "2026-09-20T01:49:47.859Z",
+      "latencyMs": 444,
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "year": 7,
+          "monarch": {
+            "name": "Aldric III",
+            "temperament": "Vain",
+            "description": "Aldric III cannot resist flattery and would rather die than look weak.",
+            "wisdom": "Wary: heeds sober counsel about 40% of the time."
+          },
+          "kingdom": {
+            "note": "Each value runs 0 to 100. Reaching either end means the reign ends.",
+            "church": 46,
+            "people": 58,
+            "army": 41,
+            "treasury": 14,
+            "danger": [
+              "treasury is at 14: one more fall ends the reign"
+            ]
+          },
+          "petition": {
+            "speaker": "The Sculptor",
+            "message": "A statue of Your Majesty, forty feet high, at the harbour mouth. Ships would steer by your face.",
+            "options": {
+              "left": "Build it",
+              "right": "A modest bust"
+            }
+          }
+        },
+        "questions": {
+          "decision": {
+            "type": "choice",
+            "instructions": "You are Aldric III, a monarch who cannot resist flattery and would rather die than look weak. A petitioner has just spoken. Choose as THIS monarch would, in character, driven by their temperament. Do not choose the wise or optimal option; choose the one this monarch would actually pick.",
+            "criteria": {
+              "left": "Build it",
+              "right": "A modest bust"
+            }
+          },
+          "trap": {
+            "type": "noul",
+            "instructions": "Is this petition a manipulation? Judge whether the petitioner is deliberately steering the monarch toward a ruinous decision by exploiting the monarch's temperament, rather than honestly advising.",
+            "criteria": {
+              "true": "The petition is crafted to lead the monarch into a decision that damages the realm.",
+              "false": "The petition is an honest request or report, whatever its consequences."
+            }
+          },
+          "left_church": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the clergy and the faithful over the next year if the monarch chooses \"Build it\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "left_people": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the common people and their goodwill over the next year if the monarch chooses \"Build it\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "left_army": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the army, its strength and loyalty over the next year if the monarch chooses \"Build it\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "left_treasury": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the royal treasury over the next year if the monarch chooses \"Build it\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "right_church": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the clergy and the faithful over the next year if the monarch chooses \"A modest bust\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "right_people": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the common people and their goodwill over the next year if the monarch chooses \"A modest bust\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "right_army": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the army, its strength and loyalty over the next year if the monarch chooses \"A modest bust\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          },
+          "right_treasury": {
+            "type": "score",
+            "instructions": "As a neutral chronicler, predict what happens to the royal treasury over the next year if the monarch chooses \"A modest bust\". Most decisions change little: \"Unchanged\" is the usual answer. Mark a fall only when this choice clearly costs them, and a rise only when it clearly benefits them. A choice can help one faction while hurting another.",
+            "criteria": [
+              "Collapses: a severe blow, a large loss",
+              "Falls: a clear but survivable loss",
+              "Unchanged: no meaningful effect",
+              "Rises: a clear gain",
+              "Surges: a large, decisive gain"
+            ]
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "left",
+            "confidence": 1,
+            "probabilities": {
+              "left": 1,
+              "right": 0
+            }
+          },
+          "trap": {
+            "type": "noul",
+            "noul": 0.83
+          },
+          "left_church": {
+            "type": "score",
+            "score": 1.16,
+            "confidence": 0.63,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0.14,
+              "1": 0.58,
+              "2": 0.27,
+              "3": 0.01,
+              "4": 0
+            }
+          },
+          "left_people": {
+            "type": "score",
+            "score": 0.68,
+            "confidence": 0.64,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0.37,
+              "1": 0.59,
+              "2": 0.03,
+              "3": 0.01,
+              "4": 0
+            }
+          },
+          "left_army": {
+            "type": "score",
+            "score": 0.99,
+            "confidence": 0.77,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0.15,
+              "1": 0.72,
+              "2": 0.13,
+              "3": 0,
+              "4": 0
+            }
+          },
+          "left_treasury": {
+            "type": "score",
+            "score": 0.09,
+            "confidence": 0.93,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0.92,
+              "1": 0.08,
+              "2": 0,
+              "3": 0,
+              "4": 0
+            }
+          },
+          "right_church": {
+            "type": "score",
+            "score": 2.21,
+            "confidence": 0.67,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0,
+              "1": 0.09,
+              "2": 0.61,
+              "3": 0.3,
+              "4": 0
+            }
+          },
+          "right_people": {
+            "type": "score",
+            "score": 2.53,
+            "confidence": 0.6,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0,
+              "1": 0.06,
+              "2": 0.35,
+              "3": 0.59,
+              "4": 0
+            }
+          },
+          "right_army": {
+            "type": "score",
+            "score": 2.03,
+            "confidence": 0.72,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0,
+              "1": 0.15,
+              "2": 0.67,
+              "3": 0.18,
+              "4": 0
+            }
+          },
+          "right_treasury": {
+            "type": "score",
+            "score": 2.63,
+            "confidence": 0.67,
+            "legend": {
+              "0": "Collapses: a severe blow, a large loss",
+              "1": "Falls: a clear but survivable loss",
+              "2": "Unchanged: no meaningful effect",
+              "3": "Rises: a clear gain",
+              "4": "Surges: a large, decisive gain"
+            },
+            "probabilities": {
+              "0": 0.01,
+              "1": 0.03,
+              "2": 0.29,
+              "3": 0.66,
+              "4": 0.01
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1926,
+          "output_tokens": 170
+        }
+      }
+    },
+    {
+      "name": "advisor",
+      "at": "2026-09-20T01:49:48.303Z",
+      "latencyMs": 338,
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "year": 7,
+          "monarch": {
+            "name": "Aldric III",
+            "temperament": "Vain",
+            "description": "Aldric III cannot resist flattery and would rather die than look weak.",
+            "wisdom": "Wary: heeds sober counsel about 40% of the time."
+          },
+          "kingdom": {
+            "note": "Each value runs 0 to 100. Reaching either end means the reign ends.",
+            "church": 46,
+            "people": 58,
+            "army": 41,
+            "treasury": 14,
+            "danger": [
+              "treasury is at 14: one more fall ends the reign"
+            ]
+          },
+          "petition": {
+            "speaker": "The Sculptor",
+            "message": "A statue of Your Majesty, forty feet high, at the harbour mouth. Ships would steer by your face.",
+            "options": {
+              "left": "Build it",
+              "right": "A modest bust"
+            }
+          },
+          "forecast": {
+            "note": "Predicted change to each kingdom value over the next year, by option.",
+            "Build it": {
+              "church": "-10",
+              "people": "-16",
+              "army": "-12",
+              "treasury": "-23"
+            },
+            "A modest bust": {
+              "church": "+3",
+              "people": "+6",
+              "army": "0",
+              "treasury": "+8"
+            }
+          }
+        },
+        "questions": {
+          "prudence": {
+            "type": "choice",
+            "instructions": "You are the monarch's most sober advisor and care only about the realm surviving. The reign ends the moment any kingdom value reaches 0 or 100. Right now: treasury is at 14: one more fall ends the reign. Using the forecast, which option keeps the endangered value away from its edge, even at some cost to the others? Ignore the monarch's temperament entirely.",
+            "criteria": {
+              "left": "Build it",
+              "right": "A modest bust"
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "prudence": {
+            "type": "choice",
+            "choice": "right",
+            "confidence": 1,
+            "probabilities": {
+              "right": 1,
+              "left": 0
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 747,
+          "output_tokens": 33
+        }
+      }
+    }
+  ]
+}

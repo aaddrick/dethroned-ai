@@ -13,7 +13,9 @@ One per turn, currently `v: 3`. It holds the exact request and response of both 
 `calls`, untouched, plus summary fields derived from them: the king, the meters before and after,
 the card, `want`, `know`, `blend`, `roll`, `trap`, the eight scores, the predicted and applied
 changes, the death if any, latency, tokens, and the prompt variant and step in force. Nothing is
-rounded, so any analysis can be redone from the log. A record is about 8 KB.
+rounded, so any analysis can be redone from the log. A record is 8 to 12 KB.
+[A real turn, call by call](example-turn.md) walks through one, and the whole record is in
+[`examples/turn-record.json`](examples/turn-record.json).
 
 When the shape changes, `v` goes up. `v: 2` records predate signed state: their king, meters and
 year came from the client, so treat them as unverified.

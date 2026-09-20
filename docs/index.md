@@ -9,6 +9,8 @@ right, down the last column, the next row back right to left.
 - [Gameplay](gameplay.md): a reign from coronation to death, the kings, the deck, how score works
   and how the balance was chosen.
 - [A turn](turn.md): the two model calls, the blend, the roll, and why a turn is two calls and not one.
+- [A real turn, call by call](example-turn.md): one turn on the real model with both requests, both
+  responses and every derived number, for reference.
 
 ## The system
 
