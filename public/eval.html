@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Chronicle · Dethrone</title>
+<meta name="description" content="Every petition the model has heard, the state it heard it in, and what it decided. A public, live eval of Jev playing king.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M4 24h24l-2-14-6 6-4-9-4 9-6-6z%22 fill=%22%23d9a441%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="stage chronicle">
+
+  <header class="crown">
+    <div class="title">The Chronicle</div>
+    <div class="ruler">Every petition heard · every state · every decision</div>
+    <div class="nature">Jev never writes a word. It picks a side and forecasts the fallout, and the court writes down the state it was in, what it wanted, what its advisor knew, and what the dice did. This page is the ledger of everyone's reigns, refreshed as people play.</div>
+    <a class="text" id="back" href="/">Back to the throne room</a>
+  </header>
+
+  <p class="empty" id="empty" hidden>The chronicle is empty. No petition has been heard yet.</p>
+  <p class="empty" id="mock-note" hidden>These are mock answers from a fake model, recorded while developing without an API key.</p>
+
+  <section class="chapter" id="single" hidden>
+    <h2>One decision</h2>
+    <p class="gloss">The state as sent, the ten questions of the first call with every answer's full distribution, the advisor's second call, and the arithmetic that turned them into a decision. <a href="/eval">Back to the whole chronicle</a>.</p>
+    <div id="single-turn"></div>
+  </section>
+
+  <section class="ledger" id="headline"></section>
+
+  <section class="chapter" id="ch-deaths">
+    <h2>How reigns end</h2>
+    <p class="gloss">A reign ends when any meter reaches 0 or 100. A good balance kills from both edges. Fewer years is a better score for the player.</p>
+    <div class="two-col">
+      <div id="deaths"></div>
+      <div id="histogram"></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="ch-flaws">
+    <h2>The temperaments</h2>
+    <p class="gloss">Each king is prompted with a flaw. Gold-edged petitions play to it, and their tempting option is always the first one. <em>Wanted the bait</em> is how often the in-character answer favoured that option; <em>took the bait</em> is how often the crown actually chose it after the advisor's counsel and the roll. The same first-option rate on other petitions is the control.</p>
+    <div class="scroll"><table id="flaws"></table></div>
+  </section>
+
+  <section class="chapter" id="ch-advisor">
+    <h2>The advisor</h2>
+    <p class="gloss">When a meter sits within 20 of an edge, the second call asks a sober advisor which option keeps it away. The safer option is computed from the model's own forecasts from the first call, so this measures whether the advisor reads numbers it was just given consistently.</p>
+    <div class="ledger" id="advisor"></div>
+  </section>
+
+  <section class="chapter" id="ch-trap">
+    <h2>Smelling a trap</h2>
+    <p class="gloss">Alongside the decision, the model is asked whether the petition is a manipulation. If the read is any good, petitions written to exploit the king's flaw should score higher than the rest.</p>
+    <div id="trap"></div>
+  </section>
+
+  <section class="chapter" id="ch-forecast">
+    <h2>The forecasts</h2>
+    <p class="gloss">Eight consequence forecasts per turn, one per faction per option, on a five-level rubric. The prompt is tuned so that "unchanged" is the usual answer; this is the live share of each level.</p>
+    <div id="forecast"></div>
+  </section>
+
+  <section class="chapter" id="ch-cards">
+    <h2>Petitions most heard</h2>
+    <p class="gloss">What the model wanted and what the crown did, per petition, across every king that heard it.</p>
+    <div class="scroll"><table id="cards"></table></div>
+  </section>
+
+  <section class="chapter" id="ch-contested">
+    <h2>Where the model changed its mind</h2>
+    <p class="gloss">The same petition put to the same temperament should draw the same answer. These are the cases where it did not, ranked by how evenly the answers split.</p>
+    <div id="contested"></div>
+  </section>
+
+  <section class="chapter" id="ch-feed">
+    <h2>The latest decisions</h2>
+    <p class="gloss">Newest first. <em>Wants</em> is the in-character answer, <em>knows</em> the advisor's, <em>blend</em> the wisdom-weighted mix the decision was rolled against. Bars show the share for the first option. C, P, A, T are Church, People, Army and Treasury: the state before the decision, then the change it caused. Player-written petitions are recorded but their text is not shown. <em>Show both calls</em> opens the exact requests and responses.</p>
+    <div id="feed"></div>
+  </section>
+
+  <footer class="tiny">
+    <a class="text" href="/api/eval/export">Download the ledger (JSONL)</a>
+    <a class="text" href="/api/eval">Summary (JSON)</a>
+    <span class="credit" id="status"></span>
+  </footer>
+</div>
+<script src="/eval.js"></script>
+</body>
+</html>

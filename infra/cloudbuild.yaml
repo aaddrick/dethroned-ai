@@ -1,0 +1,67 @@
+# Build, push, deploy. Substitutions come from the trigger (terraform/cloudbuild.tf)
+# or from --substitutions on `gcloud builds submit`. COMMIT_SHA is set by the
+# trigger; pass it by hand for manual builds.
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'pull-cache'
+    args: ['pull', '${_IMAGE}:latest']
+    allowFailure: true
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    waitFor: ['pull-cache']
+    env: ['DOCKER_BUILDKIT=1']
+    args:
+      - 'build'
+      - '--cache-from'
+      - '${_IMAGE}:latest'
+      - '--build-arg'
+      - 'BUILDKIT_INLINE_CACHE=1'
+      - '-t'
+      - '${_IMAGE}:${COMMIT_SHA}'
+      - '-t'
+      - '${_IMAGE}:latest'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push'
+    waitFor: ['build']
+    args: ['push', '--all-tags', '${_IMAGE}']
+
+  # Only the image changes. Env, secrets and scaling live in terraform/run.tf,
+  # and Terraform ignores the image, so the two never fight.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'deploy'
+    waitFor: ['push']
+    args:
+      - 'gcloud'
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE}'
+      - '--image=${_IMAGE}:${COMMIT_SHA}'
+      - '--region=${_REGION}'
+      - '--quiet'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: 'smoke'
+    waitFor: ['deploy']
+    entrypoint: 'bash'
+    args: ['infra/smoke-test.sh', '${_SERVICE}', '${_REGION}', '${_DOMAIN}']
+
+images:
+  - '${_IMAGE}:${COMMIT_SHA}'
+  - '${_IMAGE}:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 900s
+
+substitutions:
+  _REGION: us-east4
+  _SERVICE: dethrone
+  _IMAGE: us-east4-docker.pkg.dev/dethroned-ai/dethrone/dethrone
+  # Public domain for the smoke test. Empty means the *.run.app URL, which stops
+  # answering once terraform's restrict_ingress is on; the trigger passes the
+  # domain, manual submits should add _DOMAIN=dethroned.ai.
+  _DOMAIN: ''

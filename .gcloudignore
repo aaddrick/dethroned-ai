@@ -1,0 +1,13 @@
+# Source upload for `gcloud builds submit`. Like .dockerignore, except infra/ stays:
+# the build runs infra/smoke-test.sh from the checkout.
+.env
+.env.*
+!.env.example
+.git
+.playwright-mcp
+node_modules
+data
+scripts
+terraform
+.claude
+README.md

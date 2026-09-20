@@ -1,0 +1,10 @@
+node_modules/
+.env
+.playwright-mcp/
+data/log/
+terraform/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+terraform/terraform.tfvars.local
+.claude/settings.local.json

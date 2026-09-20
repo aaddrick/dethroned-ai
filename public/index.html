@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dethrone</title>
+<meta name="description" content="The model is king. You are the court. Play the petition that ends the reign.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><path d=%22M4 24h24l-2-14-6 6-4-9-4 9-6-6z%22 fill=%22%23d9a441%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="stage">
+
+  <header class="crown">
+    <div class="title">Dethrone</div>
+    <div class="ruler">
+      <span id="king-name">…</span>
+      <span class="sep">·</span><span id="king-flaw"></span>
+      <span class="sep">·</span><span id="king-wisdom"></span>
+      <span class="sep">·</span>Year <span id="year">1</span>
+    </div>
+    <div class="nature" id="hint"></div>
+    <button class="text" id="new-reign" type="button">New reign</button>
+  </header>
+
+  <section class="meters" id="meters"></section>
+
+  <section class="table">
+    <div class="option left"><span class="label" id="opt-left"></span><span class="verdict" id="verdict-left"></span></div>
+    <article class="card" id="card">
+      <div class="speaker" id="card-speaker">The Court</div>
+      <p class="message" id="card-message">Pick a petition from your hand. The king decides in under a second.</p>
+    </article>
+    <div class="option right"><span class="label" id="opt-right"></span><span class="verdict" id="verdict-right"></span></div>
+  </section>
+
+  <section class="decide" id="decide">
+    <span class="pct" id="pct-blend-l"></span>
+    <div class="bar"><div class="fill" id="fill-blend"></div><div class="mid"></div></div>
+    <span class="pct" id="pct-blend-r"></span>
+  </section>
+  <div class="readout" id="readout">The king's flaw is public. Gold-edged petitions play to it.</div>
+
+  <section class="hand" id="hand"></section>
+
+  <footer class="tiny">
+    <button class="text" id="custom-open" type="button">Write your own petition</button>
+    <button class="text" id="raw-toggle" type="button">Model's last answer</button>
+    <a class="text" href="/eval">The chronicle</a>
+    <span id="mock-banner" hidden>Mock answers. Set TYPESAFE_API_KEY and restart to play the real model.</span>
+    <span class="credit">Decisions by <a href="https://typesafe.ai" rel="noopener">Jev</a>. It never writes a word: it picks a side and predicts the fallout. After <em>Reigns</em>.</span>
+  </footer>
+
+  <div class="error" id="error" hidden></div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <h2 id="death-title">The reign has ended</h2>
+  <p class="death" id="death-text"></p>
+  <p class="score">Dethroned in <b id="death-years">–</b>. Your best: <b id="best">–</b>.</p>
+  <div class="actions">
+    <button class="text big" id="again" type="button">Crown the next one</button>
+    <button class="text" id="share" type="button">Copy boast</button>
+    <a class="text" href="/eval">Read the chronicle</a>
+  </div>
+</div>
+
+<div class="overlay" id="custom" hidden>
+  <form class="petition" id="petition" autocomplete="off">
+    <h2>Your own petition</h2>
+    <input id="in-speaker" maxlength="60" placeholder="Who speaks">
+    <textarea id="in-message" maxlength="600" rows="4" placeholder="Sire, …" required></textarea>
+    <div class="two">
+      <input id="in-left" maxlength="40" placeholder="Left option" required>
+      <input id="in-right" maxlength="40" placeholder="Right option" required>
+    </div>
+    <div class="actions">
+      <button type="submit" class="text big" id="present">Present to the king</button>
+      <button type="button" class="text" id="custom-close">Back</button>
+    </div>
+  </form>
+</div>
+
+<div class="overlay raw" id="rawbox" hidden>
+  <pre id="raw">–</pre>
+  <div class="actions">
+    <a class="text" id="raw-link" href="/eval" hidden>Both calls, in the chronicle</a>
+    <button class="text" id="raw-close" type="button">Back</button>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

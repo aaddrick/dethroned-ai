@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.git
+.playwright-mcp
+node_modules
+data
+scripts
+terraform
+infra
+.claude
+README.md

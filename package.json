@@ -1,0 +1,17 @@
+{
+  "name": "dethrone",
+  "version": "0.1.0",
+  "description": "Reigns-style demo where TypeSafe's Jev is the king and you are the court trying to bring it down.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "mock": "JEV_MOCK=1 node --env-file-if-exists=.env server.js"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}
