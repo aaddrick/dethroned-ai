@@ -93,6 +93,7 @@ async function callJev(state, questions) {
     const text = await res.text();
     lastErr = new Error(`Jev ${res.status}: ${text.slice(0, 300)}`);
     lastErr.status = res.status;
+    lastErr.code = 'model';
     if (res.status !== 429 && res.status !== 529) throw lastErr;
     await new Promise((r) => setTimeout(r, 300 * 2 ** attempt));
   }
@@ -163,11 +164,14 @@ function signState({ reign, king, kingdom, year }) {
 }
 
 function readState(token) {
+  // No token at all is a page loaded before a release that changed what a turn looks like. Starting
+  // a new reign from that page would fail the same way, so it is told to reload instead.
+  if (!token) throw Object.assign(new Error('The throne room has been rebuilt since this page was opened. Reload it to carry on.'), { code: 'reload' });
   const [payload, sig] = String(token || '').split('.');
   const good = payload && sig && Buffer.from(mac(payload));
-  if (!good || good.length !== Buffer.byteLength(sig) || !crypto.timingSafeEqual(good, Buffer.from(sig))) throw new Error('This reign is not one the court remembers. Crown a new one.');
+  if (!good || good.length !== Buffer.byteLength(sig) || !crypto.timingSafeEqual(good, Buffer.from(sig))) throw Object.assign(new Error('This reign is not one the court remembers. Crown a new one.'), { code: 'reign' });
   const state = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-  if (Date.now() - state.iat > TOKEN_MAX_AGE_MS) throw new Error('This reign has gone stale. Crown a new one.');
+  if (Date.now() - state.iat > TOKEN_MAX_AGE_MS) throw Object.assign(new Error('This reign has gone stale. Crown a new one.'), { code: 'reign' });
   return state;
 }
 
@@ -330,16 +334,26 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/turn' && req.method === 'POST') {
       const foreign = refuseForeign(req);
       if (foreign) return json(res, foreign.startsWith('Send') ? 415 : 403, { error: foreign });
-      if (await rateLimited(ip)) return json(res, 429, { error: `Slow down. The court hears at most ${PER_IP_PER_MIN} petitions a minute from one voice.` });
-      if (await dayCapped()) return json(res, 429, { error: 'The court has heard enough for one day. Come back tomorrow.' });
-      if (inFlight >= MAX_IN_FLIGHT) return json(res, 503, { error: 'The court is crowded. Try again in a moment.' });
+      // Every refusal carries a `code` the page turns into a notice, and `retryIn` seconds when waiting helps.
+      // The per-IP window is the calendar minute and the daily cap the UTC day, so both are known exactly.
+      if (await rateLimited(ip)) {
+        const retryIn = 60 - (Math.floor(Date.now() / 1000) % 60);
+        res.setHeader('Retry-After', String(retryIn));
+        return json(res, 429, { code: 'slow', retryIn, error: `The court hears at most ${PER_IP_PER_MIN} petitions a minute from one voice.` });
+      }
+      if (await dayCapped()) {
+        const retryIn = 86_400 - (Math.floor(Date.now() / 1000) % 86_400);
+        res.setHeader('Retry-After', String(retryIn));
+        return json(res, 429, { code: 'day', retryIn, error: 'The court has heard every petition it will hear today, from everyone.' });
+      }
+      if (inFlight >= MAX_IN_FLIGHT) return json(res, 503, { code: 'crowded', retryIn: 3, error: 'Too many petitioners are before the king at once.' });
       inFlight++;
       try {
         const turn = parseTurn(await readBody(req));
         // One decision per reign and year. A token played twice gets the first answer back, so a
         // lost response can be retried and a bad roll cannot be re-rolled.
         const played = await log.played(turn.reign, turn.year);
-        if (played) return played.calls ? json(res, 200, { ...turnResponse(played), replayed: true }) : json(res, 409, { error: 'That year has already been decided.' });
+        if (played) return played.calls ? json(res, 200, { ...turnResponse(played), replayed: true }) : json(res, 409, { code: 'reign', error: 'That year has already been decided. Crown a new reign.' });
         const first = await jevCall('forecast', buildState(turn), buildQuestions(turn));
         const advisor = buildAdvisorCall(turn, first.response.answers);
         const second = await jevCall('advisor', advisor.state, advisor.questions);
@@ -350,7 +364,7 @@ const server = http.createServer(async (req, res) => {
           // Two requests raced on the same year and the other one was written first.
           const winner = await log.played(turn.reign, turn.year);
           if (winner?.calls) return json(res, 200, { ...turnResponse(winner), replayed: true });
-          return json(res, 409, { error: 'That year has already been decided.' });
+          return json(res, 409, { code: 'reign', error: 'That year has already been decided. Crown a new reign.' });
         }
         return json(res, 200, turnResponse(rec));
       } finally { inFlight--; }
@@ -367,8 +381,12 @@ const server = http.createServer(async (req, res) => {
       return res.end(data);
     } catch { return json(res, 404, { error: 'Not found' }); }
   } catch (err) {
-    const status = err.status === 429 ? 429 : err.status === 529 ? 503 : 400;
-    return json(res, status, { error: err.message || 'Something went wrong.' });
+    if (err.code === 'model' || err.name === 'TimeoutError' || err.name === 'AbortError' || err.cause) {
+      // The model's own words stay in the server log; the player gets authored copy.
+      console.error('Jev call failed:', err.message);
+      return json(res, err.status === 429 ? 429 : 503, { code: 'model', retryIn: 5, error: 'The king did not answer. The model behind him is busy or unreachable.' });
+    }
+    return json(res, 400, { code: err.code || 'bad', error: err.message || 'Something went wrong.' });
   }
 });
 

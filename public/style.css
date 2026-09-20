@@ -86,7 +86,6 @@ button.text:disabled { opacity: .4; cursor: wait; }
 .tiny { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; font-size: .85rem; color: var(--dim); }
 .tiny .credit { color: var(--dim); }
 .tiny #mock-banner { color: var(--gold); }
-.error { color: #f0a08f; text-align: center; }
 
 /* overlays */
 .overlay { position: fixed; inset: 0; background: rgba(8,6,4,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 14px; z-index: 10; }

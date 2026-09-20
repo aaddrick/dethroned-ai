@@ -57,7 +57,6 @@
     <span class="credit">Decisions by <a href="https://typesafe.ai" rel="noopener">Jev</a>. It never writes a word: it picks a side and predicts the fallout. After <em>Reigns</em>.</span>
   </footer>
 
-  <div class="error" id="error" hidden></div>
 </div>
 
 <div class="overlay" id="overlay" hidden>
@@ -68,6 +67,15 @@
     <button class="text big" id="again" type="button">Crown the next one</button>
     <button class="text" id="share" type="button">Copy boast</button>
     <a class="text" href="/eval">Read the chronicle</a>
+  </div>
+</div>
+
+<div class="overlay" id="notice" hidden role="alertdialog" aria-labelledby="notice-title" aria-describedby="notice-text">
+  <h2 id="notice-title"></h2>
+  <p class="death" id="notice-text"></p>
+  <p class="score" id="notice-wait" hidden></p>
+  <div class="actions">
+    <button class="text big" id="notice-ok" type="button">Back to court</button>
   </div>
 </div>
 

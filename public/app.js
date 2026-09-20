@@ -162,7 +162,6 @@ function playCustom(e) {
 
 async function presentCard(card, afterPlay) {
   if (busy || !game) return;
-  $('error').hidden = true;
   busy = true;
   $('present').disabled = true;
   setHandEnabled(false);
@@ -184,13 +183,12 @@ async function presentCard(card, afterPlay) {
         ? { token: game.token, custom: { speaker: card.speaker, message: card.message, left: card.left, right: card.right } }
         : { token: game.token, i: card.i }),
     });
-    r = await res.json();
-    if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
+    r = await res.json().catch(() => ({}));
+    if (!res.ok) throw Object.assign(new Error(r.error || `The court returned ${res.status}.`), { code: r.code, retryIn: r.retryIn });
   } catch (err) {
     $('card').classList.remove('thinking');
-    $('error').textContent = err.message;
-    $('error').hidden = false;
     busy = false; $('present').disabled = false; setHandEnabled(true);
+    showNotice(err, card);
     return;
   }
 
@@ -228,6 +226,57 @@ async function presentCard(card, afterPlay) {
   busy = false;
   $('present').disabled = false;
   setHandEnabled(true);
+}
+
+// ---- refusals -------------------------------------------------------------
+// A turn that was not played always says so, in the middle of the stage, with what to do next.
+
+const NOTICES = {
+  slow:    { title: 'The court is weary', button: 'Back to court' },
+  day:     { title: 'The court is closed', button: 'Back to court' },
+  crowded: { title: 'The hall is full', button: 'Back to court' },
+  model:   { title: 'The king is silent', button: 'Back to court' },
+  reign:   { title: 'This reign is over', button: 'Crown the next one', newReign: true },
+  reload:  { title: 'The court has moved', button: 'Reload', reload: true },
+};
+let noticeTimer = null;
+
+function waitText(code, s) {
+  if (s <= 0) return 'You may petition again now.';
+  if (code === 'day') { const h = Math.floor(s / 3600), m = Math.ceil((s % 3600) / 60); return `The doors open again in ${h ? `${h} h ` : ''}${m} min.`; }
+  return `You may petition again in ${s} ${s === 1 ? 'second' : 'seconds'}.`;
+}
+
+function showNotice(err, card) {
+  const offline = err instanceof TypeError; // fetch itself failed: no network, or the server is gone
+  const kind = NOTICES[err.code] || { title: offline ? 'No word from the court' : 'The petition was turned away', button: 'Back to court' };
+  $('notice-title').textContent = kind.title;
+  $('notice-text').textContent = offline ? 'The petition never reached the throne room. Check your connection and present it again.' : err.message;
+  $('notice-ok').textContent = kind.button;
+  clearInterval(noticeTimer);
+  const wait = $('notice-wait');
+  wait.hidden = !(err.retryIn > 0);
+  if (err.retryIn > 0) {
+    const until = Date.now() + err.retryIn * 1000;
+    const tick = () => { wait.textContent = waitText(err.code, Math.ceil((until - Date.now()) / 1000)); };
+    tick();
+    noticeTimer = setInterval(tick, 1000);
+  }
+  $('notice-ok').onclick = () => {
+    clearInterval(noticeTimer);
+    $('notice').hidden = true;
+    if (kind.reload) return location.reload();
+    if (kind.newReign) return newReign();
+    // The petition was not heard: clear it from the table, and give a written one back to its author.
+    resetCard();
+    $('card-speaker').textContent = 'The Court';
+    $('card-message').textContent = 'That petition was not heard. Pick one from your hand.';
+    $('opt-left').textContent = '';
+    $('opt-right').textContent = '';
+    if (card.tag === 'custom') $('custom').hidden = false;
+  };
+  $('notice').hidden = false;
+  $('notice-ok').focus();
 }
 
 function logTurn(card, r) {
