@@ -2,6 +2,7 @@
   "name": "dethrone",
   "version": "0.1.0",
   "description": "Reigns-style demo where TypeSafe's Jev is the king and you are the court trying to bring it down.",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "engines": {

@@ -57,3 +57,7 @@ Node 20 or newer. The only dependency is `pg`. Without a database, turns are log
 - `CLAUDE.md`: how the code is laid out, how the game is balanced, and the design rules
 - `terraform/README.md`: the Google Cloud deployment
 - `scripts/`: the simulations and experiments behind the tuning, including the one that showed why a turn needs two calls
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
