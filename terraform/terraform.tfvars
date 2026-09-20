@@ -7,8 +7,8 @@ environment    = "prod"
 # at Namecheap to `terraform output name_servers` after the first apply.
 domain = "dethroned.ai"
 
-# Flip to true once https://dethroned.ai answers; closes the *.run.app URL.
-restrict_ingress = false
+# Only the load balancer reaches the service; the *.run.app URL returns 404.
+restrict_ingress = true
 
 # Set after linking the GitHub repo (terraform/README.md, "Cloud Build trigger").
 github_repository = "projects/dethroned-ai/locations/us-east4/connections/github-aaddrick/repositories/aaddrick-dethroned-ai"

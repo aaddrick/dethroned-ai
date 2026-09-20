@@ -16,7 +16,7 @@ if [[ -n "$domain" ]]; then
   # after DNS delegation to issue and TLS fails until then. While Cloud Run
   # ingress is still open, fall back to the *.run.app URL rather than fail a
   # deploy on a provisioning certificate; once ingress is restricted the
-  # fallback returns 403 and the test fails, as it should.
+  # fallback returns 404 and the test fails, as it should.
   if curl -fsS --max-time 20 -o /dev/null "https://$domain/api/eval"; then
     url="https://$domain"
   else
