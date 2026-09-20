@@ -33,7 +33,7 @@ function bar(label, share, right, cls = '') {
 function renderHeadline(d) {
   $('headline').innerHTML = [
     tile(d.turns, 'petitions heard', d.custom ? `${d.custom} written by players` : ''),
-    tile(d.reigns, 'reigns', `${d.ended} ended`),
+    tile(d.reigns, 'reigns', `${d.ended} ended${d.assistedReigns ? ` · ${d.assistedReigns} more heard a player's own petition` : ''}`),
     tile(d.medianYears == null ? '–' : num(d.medianYears, d.medianYears % 1 ? 1 : 0), 'median reign, years', 'of reigns that ended'),
     tile(d.medianLatency == null ? '–' : `${Math.round(d.medianLatency)} ms`, 'median turn', 'two calls to the model'),
     tile(esc(d.models.join(', ') || '–'), 'model', d.first ? `since ${new Date(d.first).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}` : ''),

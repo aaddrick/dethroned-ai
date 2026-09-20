@@ -87,6 +87,26 @@ resource "google_cloud_run_v2_service" "app" {
         value = tostring(var.max_in_flight)
       }
       env {
+        name  = "DAILY_TURN_CAP"
+        value = tostring(var.daily_turn_cap)
+      }
+      # Which X-Forwarded-For entry is the client, from the right: the last one on the
+      # *.run.app URL, the one before the balancer's once ingress is closed to the balancer.
+      # While both doors are open it stays 1, because 2 would let a direct caller forge it.
+      env {
+        name  = "XFF_FROM_RIGHT"
+        value = var.domain != "" && var.restrict_ingress ? "2" : "1"
+      }
+      env {
+        name = "STATE_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.state_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
         name = "TYPESAFE_API_KEY"
         value_source {
           secret_key_ref {
@@ -143,6 +163,8 @@ resource "google_cloud_run_v2_service" "app" {
     google_secret_manager_secret_iam_member.web_reads_api_key,
     google_secret_manager_secret_iam_member.web_reads_db_password,
     google_secret_manager_secret_version.db_password,
+    google_secret_manager_secret_iam_member.web_reads_state_secret,
+    google_secret_manager_secret_version.state_secret,
     google_project_iam_member.web_cloudsql_client,
   ]
 }

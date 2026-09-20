@@ -1,11 +1,12 @@
-// Dethrone client. Keeps the game state; the server is stateless.
+// Dethrone client. Shows the game state and carries it; the server signs it (game.token) and is
+// otherwise stateless. A turn sends the token back with a deck card's index or a written petition.
 const FACTIONS = ['church', 'people', 'army', 'treasury'];
 const LABEL = { church: 'Church', people: 'People', army: 'Army', treasury: 'Treasury' };
 const HAND_SIZE = 5;
 const FLAW_SHARE = 0.45; // chance each draw comes from the pile that targets the king's flaw
 const $ = (id) => document.getElementById(id);
 
-let game = null;      // { reign, king, flaw, kingdom, year, deck, mock, model }
+let game = null;      // { reign, token, king, flaw, kingdom, year, deck, mock, model }
 let piles = null;     // { flaw: [...], other: [...] } remaining draw piles for this reign
 let hand = [];
 let busy = false;
@@ -97,6 +98,7 @@ function setHandEnabled(on) {
 async function newReign() {
   const res = await fetch('/api/reign');
   game = await res.json();
+  game.deck = game.deck.map((c, i) => ({ ...c, i }));
   $('king-name').textContent = game.king.name;
   $('king-flaw').textContent = game.flaw.label;
   $('king-wisdom').textContent = game.wisdomLabel;
@@ -178,7 +180,9 @@ async function presentCard(card, afterPlay) {
   try {
     const res = await fetch('/api/turn', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reign: game.reign, king: game.king, kingdom: game.kingdom, year: game.year, card }),
+      body: JSON.stringify(card.tag === 'custom'
+        ? { token: game.token, custom: { speaker: card.speaker, message: card.message, left: card.left, right: card.right } }
+        : { token: game.token, i: card.i }),
     });
     r = await res.json();
     if (!res.ok) throw new Error(r.error || `HTTP ${res.status}`);
@@ -211,6 +215,7 @@ async function presentCard(card, afterPlay) {
   // 3. Consequences land.
   game.kingdom = r.kingdom;
   game.year = r.year;
+  game.token = r.token;
   renderMeters(game.kingdom, r.applied);
   $('year').textContent = game.year;
   logTurn(card, r);

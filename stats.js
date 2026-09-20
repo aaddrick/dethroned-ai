@@ -52,11 +52,17 @@ export function summarise(records, { feed = 40, cards = 12 } = {}) {
   const models = new Set();
   let custom = 0;
 
+  // A player-written petition can say anything, so it is not a clean sample of the model on the
+  // authored deck. Those turns count only in their own trap reading, and a reign that heard one is
+  // left out of the reign lengths and causes of death: its ending may be the player's text at work.
+  const assisted = new Set();
+  for (const r of records) if (r.card.tag === 'custom' && r.reign) assisted.add(r.reign);
+
   for (const r of records) {
     models.add(r.model);
     if (r.latency) latency.push(r.latency.forecast + r.latency.advisor);
+    if (r.card.tag === 'custom') { custom++; trap.custom.push(r.trap); continue; }
     const targeted = r.card.tag === r.king.flaw;
-    if (r.card.tag === 'custom') custom++;
 
     const fl = (byFlaw[r.king.flaw] ??= { turns: 0, targeted: 0, wantedBait: 0, tookBait: 0, otherTurns: 0, wantedLeftOther: 0, disagree: 0, trapTargeted: [], trapOther: [], reigns: 0, ended: 0, years: [] });
     fl.turns++;
@@ -67,8 +73,6 @@ export function summarise(records, { feed = 40, cards = 12 } = {}) {
       if (r.chosen === 'left') fl.tookBait++;
       fl.trapTargeted.push(r.trap);
       trap.targeted.push(r.trap);
-    } else if (r.card.tag === 'custom') {
-      trap.custom.push(r.trap);
     } else {
       fl.otherTurns++;
       if (r.want >= 0.5) fl.wantedLeftOther++;
@@ -88,7 +92,7 @@ export function summarise(records, { feed = 40, cards = 12 } = {}) {
       if (r.chosen === safer.side) advisor.followed++;
     }
 
-    if (r.reign) {
+    if (r.reign && !assisted.has(r.reign)) {
       const g = reigns.get(r.reign) || { flaw: r.king.flaw, wisdom: r.king.wisdom, name: r.king.name, years: 0, death: null, turns: 0, last: r.t };
       g.turns++;
       g.years = Math.max(g.years, r.year);
@@ -96,7 +100,7 @@ export function summarise(records, { feed = 40, cards = 12 } = {}) {
       if (r.death) g.death = r.death;
       reigns.set(r.reign, g);
     }
-    if (r.death) deaths[r.death.faction][r.death.edge]++;
+    if (r.death && !assisted.has(r.reign)) deaths[r.death.faction][r.death.edge]++;
 
     if (r.card.i != null) {
       const c = byCard.get(r.card.i) || { i: r.card.i, tag: r.card.tag, speaker: r.card.speaker, message: r.card.message, left: r.card.left, right: r.card.right, plays: 0, wantLeft: 0, choseLeft: 0, trap: [], deaths: 0, wantByFlaw: {} };
@@ -157,6 +161,7 @@ export function summarise(records, { feed = 40, cards = 12 } = {}) {
   return {
     turns: n,
     custom,
+    assistedReigns: assisted.size,
     reigns: reigns.size,
     ended: ended.length,
     medianYears: median(years),

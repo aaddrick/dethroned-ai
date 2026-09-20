@@ -6,6 +6,7 @@
 // so however many instances serve the game there is one chronicle. Without Postgres the full records
 // go to a local JSONL file, which is enough for one process on a laptop.
 //
+//   CUSTOM_TEXT_DAYS  blank player-written text and its raw calls after this many days (default 0: keep)
 //   LOG_DIR         directory for the local file when Postgres is off (default data/log; empty disables)
 //   LOG_MAX         slim records kept in memory, oldest dropped (default 100000)
 //   LOG_RAW_MEMORY  full records kept in memory (default 2000)
@@ -18,11 +19,13 @@ import * as db from './db.js';
 const LOG_DIR = process.env.LOG_DIR === undefined ? 'data/log' : process.env.LOG_DIR;
 const MAX = Number(process.env.LOG_MAX || 100_000);
 const RAW_MAX = Number(process.env.LOG_RAW_MEMORY || 2000);
+const CUSTOM_TEXT_DAYS = Number(process.env.CUSTOM_TEXT_DAYS || 0);
 const REFRESH_MS = 60_000;
 const BATCH = 2000;
 
 export const records = [];   // slim, oldest first
 const seen = new Set();
+const turnOf = new Map();    // 'reign:year' -> id, for signed-state records (v >= 3): one decision per year
 const rawCache = new Map();  // id -> full record, insertion ordered, capped at RAW_MAX
 let filePath = null;
 let file = null;             // local append stream
@@ -34,13 +37,14 @@ function slim(r) { const { calls, ...rest } = r; return rest; }
 function ingest(r) {
   if (!r?.id || seen.has(r.id)) return false;
   seen.add(r.id);
+  if (r.v >= 3 && r.reign) turnOf.set(`${r.reign}:${r.year}`, r.id);
   records.push(slim(r));
   if (r.calls) {
     rawCache.set(r.id, r);
     if (rawCache.size > RAW_MAX) rawCache.delete(rawCache.keys().next().value);
   }
   if (records.length > MAX) {
-    for (const d of records.splice(0, records.length - MAX)) { seen.delete(d.id); rawCache.delete(d.id); }
+    for (const d of records.splice(0, records.length - MAX)) { seen.delete(d.id); rawCache.delete(d.id); turnOf.delete(`${d.reign}:${d.year}`); }
   }
   return true;
 }
@@ -64,10 +68,24 @@ async function refresh() {
   try { status.loaded += await pull(); } catch (e) { fail('postgres', e); }
 }
 
+// False when the row was refused: the unique index on (reign, year) already holds a decision for
+// that year, written by this instance or another. A database error is not a refusal; the record
+// stays in memory and the error is reported.
 async function insert(r) {
   try {
-    await db.query('INSERT INTO turns (id, t, reign, mock, record) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING', [r.id, r.t, r.reign, r.mock, r]);
-  } catch (e) { fail('postgres', e); }
+    const { rowCount } = await db.query('INSERT INTO turns (id, t, reign, mock, record) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING', [r.id, r.t, r.reign, r.mock, r]);
+    return rowCount > 0;
+  } catch (e) { fail('postgres', e); return true; }
+}
+
+// Player-written text is kept for analysis, not for ever, when CUSTOM_TEXT_DAYS is set. The numbers
+// stay; the petition and the raw calls that quote it go, and the record says so.
+async function purge() {
+  try {
+    await db.query(
+      `UPDATE turns SET record = record || jsonb_build_object('calls', null, 'purged', true, 'card', jsonb_build_object('i', null, 'tag', 'custom', 'speaker', null, 'message', null, 'left', null, 'right', null))
+       WHERE record->'card'->>'tag' = 'custom' AND record->'purged' IS NULL AND t < now() - make_interval(days => $1)`, [CUSTOM_TEXT_DAYS]);
+  } catch (e) { fail('purge', e); }
 }
 
 // ---- local file --------------------------------------------------------------
@@ -99,10 +117,26 @@ async function openFile() {
 
 // ---- public API ----------------------------------------------------------------
 
-export function record(r) {
-  if (!ingest(r)) return;
-  if (db.enabled) insert(r);
-  else if (file) file.write(JSON.stringify(r) + '\n');
+// True when the record was kept; false when its reign already has a decision for that year.
+export async function record(r) {
+  if (r.reign && turnOf.has(`${r.reign}:${r.year}`)) return false;
+  if (db.enabled && !(await insert(r))) return false;
+  if (!ingest(r)) return false;
+  if (!db.enabled && file) file.write(JSON.stringify(r) + '\n');
+  return true;
+}
+
+// The full record already decided for this reign and year, if any. Postgres is asked even when
+// memory says no: another instance may have played it.
+export async function played(reign, year) {
+  if (!reign) return null;
+  const id = turnOf.get(`${reign}:${year}`);
+  if (id) return raw(id);
+  if (!db.enabled) return null;
+  try {
+    const { rows } = await db.query("SELECT record FROM turns WHERE reign = $1 AND (record->>'year')::int = $2 AND (record->>'v')::int >= 3 LIMIT 1", [reign, year]);
+    return rows[0]?.record ?? null;
+  } catch (e) { fail('played', e); return null; }
 }
 
 // The full record for one turn: from memory, else Postgres, else the local file. Postgres is asked
@@ -144,6 +178,7 @@ export async function start() {
     status.store = 'postgres';
     await refresh();
     setInterval(refresh, REFRESH_MS).unref();
+    if (CUSTOM_TEXT_DAYS > 0) { purge(); setInterval(purge, 3600_000).unref(); }
   } else {
     await openFile();
   }

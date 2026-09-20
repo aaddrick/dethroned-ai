@@ -24,6 +24,13 @@ CREATE TABLE IF NOT EXISTS turns (
 );
 CREATE INDEX IF NOT EXISTS turns_reign_idx ON turns (reign);
 CREATE INDEX IF NOT EXISTS turns_t_idx ON turns (t);
+-- One decision per reign and year, for records made against signed state (v >= 3). Older records
+-- took the year from the client and may repeat it.
+CREATE UNIQUE INDEX IF NOT EXISTS turns_reign_year_idx ON turns (reign, ((record->>'year')::int)) WHERE (record->>'v')::int >= 3;
+CREATE TABLE IF NOT EXISTS day_hits (
+  day    date PRIMARY KEY,
+  hits   integer NOT NULL DEFAULT 0
+);
 CREATE TABLE IF NOT EXISTS ip_hits (
   ip     text NOT NULL,
   minute bigint NOT NULL,
@@ -71,6 +78,14 @@ export async function rateLimited(ip, limit) {
   const { rows } = await query(
     'INSERT INTO ip_hits (ip, minute, hits) VALUES ($1, $2, 1) ON CONFLICT (ip, minute) DO UPDATE SET hits = ip_hits.hits + 1 RETURNING hits',
     [ip, minute()],
+  );
+  return rows[0].hits > limit;
+}
+
+// True when the whole service has used its allowance of turns for the current UTC day.
+export async function dayLimited(limit) {
+  const { rows } = await query(
+    "INSERT INTO day_hits (day, hits) VALUES ((now() AT TIME ZONE 'utc')::date, 1) ON CONFLICT (day) DO UPDATE SET hits = day_hits.hits + 1 RETURNING hits",
   );
   return rows[0].hits > limit;
 }

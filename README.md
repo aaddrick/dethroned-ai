@@ -36,7 +36,9 @@ The questions this is meant to answer:
 - `/api/eval` is the summary as JSON
 - `/api/eval/export` is every record as JSONL
 
-Petitions that players write themselves are counted, but their text is never shown or exported.
+Petitions that players write themselves are counted, but their text is never shown or exported, and reigns that heard one are kept out of the headline numbers.
+
+The game state (king, meters, year) is signed by the server, so a record in the chronicle is a turn that was really played from a state the server produced, once.
 
 ## Run it locally
 

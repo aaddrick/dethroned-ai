@@ -106,6 +106,12 @@ variable "per_ip_per_min" {
   default     = 30
 }
 
+variable "daily_turn_cap" {
+  description = "Turns the whole service will play in one UTC day (DAILY_TURN_CAP in server.js)."
+  type        = number
+  default     = 20000
+}
+
 variable "max_in_flight" {
   description = "Turns one instance will process at once (MAX_IN_FLIGHT in server.js)."
   type        = number

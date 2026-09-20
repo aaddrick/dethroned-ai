@@ -9,7 +9,7 @@ What it manages:
 | `apis.tf` | the twelve APIs the stack uses |
 | `iam.tf` | `dethrone-web` (runtime) and `dethrone-build` (Cloud Build) service accounts and their bindings; public invoker on the service |
 | `registry.tf` | Artifact Registry repo `dethrone` with cleanup policies |
-| `secrets.tf` | the `TYPESAFE_API_KEY` secret container (value added with gcloud, never in state) |
+| `secrets.tf` | the `TYPESAFE_API_KEY` secret container (value added with gcloud, never in state) and `STATE_SECRET`, the generated key the server signs reign state with |
 | `sql.tf` | Cloud SQL Postgres `dethrone-pg`, the database, user and generated `PGPASSWORD` secret |
 | `run.tf` | the Cloud Run service (image ignored, Cloud Build owns it); ingress closes to the balancer when `restrict_ingress` is on |
 | `load_balancer.tf` | global static IP, managed certificate, serverless NEG, backend, URL maps (www to apex, HTTP to HTTPS), proxies and forwarding rules; created only when `domain` is set |
@@ -59,7 +59,7 @@ gcloud builds submit --config=infra/cloudbuild.yaml --project=dethroned-ai --reg
 
 1. `terraform apply`. The zone exists and `terraform output name_servers` lists its four `ns-cloud-*.googledomains.com` names. The certificate sits in `PROVISIONING` until the name resolves to `terraform output lb_ip`.
 2. At Namecheap, Domain List, dethroned.ai, Nameservers: choose Custom DNS and paste the four names. This replaces Namecheap's parking page and its email-forwarding records; the domain has no mail, so nothing is lost. Delegation takes minutes to a few hours; `dig +short dethroned.ai NS` shows when it has moved. The certificate issues within about an hour of that (`gcloud compute ssl-certificates describe dethrone-cert --global --format='value(managed.status)'` reads `ACTIVE`).
-3. Once `https://dethroned.ai` answers, set `restrict_ingress = true` and apply. The `*.run.app` URL then returns 403 and only the balancer reaches the service, as with nonconvexlabs.com. Manual deploys must pass `_DOMAIN=dethroned.ai` from then on so the smoke test goes through the balancer (the trigger passes it on its own).
+3. Once `https://dethroned.ai` answers, set `restrict_ingress = true` and apply. The `*.run.app` URL then returns 404 and only the balancer reaches the service, as with nonconvexlabs.com. Manual deploys must pass `_DOMAIN=dethroned.ai` from then on so the smoke test goes through the balancer (the trigger passes it on its own).
 
 The balancer costs about $18 a month (two forwarding rules); the zone about $0.20. Everything else in it is free at demo traffic. There is no Cloud Armor policy: the app rate-limits per IP in Postgres and a WAF would cost more than the balancer.
 

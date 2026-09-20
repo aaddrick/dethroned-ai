@@ -98,6 +98,7 @@ button.text:disabled { opacity: .4; cursor: wait; }
 .petition input, .petition textarea { font: inherit; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--dim); color: var(--ink); padding: 8px 2px; }
 .petition input:focus, .petition textarea:focus { outline: none; border-bottom-color: var(--gold); }
 .petition .two { display: flex; gap: 20px; }
+.petition .fine { margin: 0; color: var(--muted); font-style: italic; font-size: .85rem; text-align: center; }
 .overlay.raw pre { font: .75rem/1.4 ui-monospace, Menlo, monospace; color: var(--muted); max-height: 70vh; overflow: auto; text-align: left; width: min(720px, 100%); margin: 0; }
 
 /* narrow */
