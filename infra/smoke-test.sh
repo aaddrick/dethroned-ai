@@ -9,10 +9,19 @@ set -euo pipefail
 service=${1:?service}
 region=${2:?region}
 domain=${3:-}
+run_url=$(gcloud run services describe "$service" --region="$region" --format='value(status.url)')
+url=$run_url
 if [[ -n "$domain" ]]; then
-  url="https://$domain"
-else
-  url=$(gcloud run services describe "$service" --region="$region" --format='value(status.url)')
+  # The domain is the real front door, but its certificate takes up to an hour
+  # after DNS delegation to issue and TLS fails until then. While Cloud Run
+  # ingress is still open, fall back to the *.run.app URL rather than fail a
+  # deploy on a provisioning certificate; once ingress is restricted the
+  # fallback returns 403 and the test fails, as it should.
+  if curl -fsS --max-time 20 -o /dev/null "https://$domain/api/eval"; then
+    url="https://$domain"
+  else
+    echo "WARN: https://$domain is not answering (certificate still provisioning?); testing $run_url instead" >&2
+  fi
 fi
 echo "Smoke testing $url"
 
